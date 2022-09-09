@@ -2,6 +2,9 @@ import random
 import csv
 from os import listdir
 from os.path import isfile, join
+from showdown_team_parser import ShowdownTeamParser
+from poke_env.environment.pokemon import Pokemon
+from poke_env.environment.move import Move
 
 class ShowdownTeamProvider:
     def __init__(self):
@@ -39,14 +42,11 @@ class ShowdownTeamProvider:
         return [trainer_name, team]
 
     def read_teams(self, trainer_name, set_name):
-        print("Reading teams for " + trainer_name)
         trainer_file_path = "C:\\Code\\showdown-parser\\Trainer CSVs\\" + trainer_name + ".csv"
         trainer_file = open(trainer_file_path)
-        print("Opened file. Reading first line...")
         csv_reader = csv.reader(trainer_file)
         line = []
         line = next(csv_reader)
-        print("Successfully read first line. Searching for correct set...")
         teams = []
         reading_set = False
 
@@ -79,3 +79,67 @@ class ShowdownTeamProvider:
         print(log)
         
         return self.get_specific_team(trainer_name, team)
+
+    def get_worst_matchups_in_master(self, sdn_challenger_team: str):
+        print("Retrieving worst matchups in master for following team:")
+        print(sdn_challenger_team)
+        parser = ShowdownTeamParser()
+        matchup_list = [] # To begin with, this will be a list of strings with
+                          # trainer name, team number, and matchup rating.
+        
+        challenger_team = parser.parse_team(sdn_challenger_team)
+        print("All trainers in master class:")
+
+        for mc_trainer_name in self.trainer_set_directory["M"]:
+            teams = self.read_teams(mc_trainer_name, "M")
+
+            for mc_team_number in teams:
+                sdn_mc_team = self.get_specific_team(mc_trainer_name, mc_team_number)[1]
+                mc_team = parser.parse_team(sdn_mc_team)
+
+                matchup_rating = 0
+
+                # Check each MC team pokemon's offensive and defensive capabilities
+                # vs each of the challenger team's pokemon.
+                for mc_pokemon in mc_team.values():
+                    mc_poke_env_pokemon = Pokemon(species=self.get_id(mc_pokemon["species"]))
+                    
+                    for challenger_pokemon in challenger_team.values():
+                        challenger_poke_env_pokemon = Pokemon(species=self.get_id(challenger_pokemon["species"]))
+
+                        # Increase rating based on how good our moves are against challenger pokemon.
+                        for move in mc_pokemon["moves"]:
+                            mc_poke_env_move = Move(self.get_id(move))
+
+                            if mc_poke_env_move.base_power == 0:
+                                # Ignore non-damaging moves.
+                                continue
+
+                            matchup_rating = matchup_rating + challenger_poke_env_pokemon.damage_multiplier(mc_poke_env_move)
+
+                        # Decrease based on how good challenger pokemon's moves are against us.
+                        for move in challenger_pokemon["moves"]:
+                            challenger_poke_env_move = Move(self.get_id(move))
+
+                            if challenger_poke_env_move.base_power == 0:
+                                # Ignore non-damaging moves.
+                                continue
+
+                            matchup_rating = matchup_rating - mc_poke_env_pokemon.damage_multiplier(challenger_poke_env_move)
+
+                report = [mc_trainer_name, mc_team_number, matchup_rating]
+                matchup_list.append(report)
+
+        def matchup_rating(report):
+            return report[2]
+
+        matchup_list.sort(key=matchup_rating, reverse=True)
+        result = []
+
+        for report in matchup_list:
+            result.append([report[0], report[1]])
+
+        return result
+
+    def get_id(self, raw_value: str):
+        return raw_value.replace("-", "").replace(" ", "").replace(".", "").lower().strip()

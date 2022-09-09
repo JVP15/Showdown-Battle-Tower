@@ -1,0 +1,29 @@
+Lunatone @ Focus Sash
+Ability: Levitate
+Level: 50
+EVs: 252 HP / 4 Def / 252 SpA
+Quiet Nature
+- Trick Room
+- Ice Beam
+- Grass Knot
+- Psychic
+
+Torkoal @ Charcoal
+Ability: Drought
+Level: 50
+EVs: 252 HP / 4 Def / 252 SpA
+Quiet Nature
+- Eruption
+- Flamethrower
+- Solar Beam
+- Earth Power
+
+Rampardos @ Life Orb
+Ability: Mold Breaker
+Level: 50
+EVs: 252 HP / 252 Atk / 4 Def
+Brave Nature
+- Head Smash
+- Zen Headbutt
+- Earthquake
+- Iron Head

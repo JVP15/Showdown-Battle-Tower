@@ -1,0 +1,29 @@
+Scizor @ Choice Band
+Ability: Technician
+Level: 50
+EVs: 236 HP / 252 Atk / 20 Def
+Adamant Nature
+- Bullet Punch
+- U-turn
+- Quick Attack
+- Thief
+
+Pelipper @ Choice Scarf
+Ability: Drizzle
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Surf
+- Ice Beam
+- Hurricane
+- U-turn
+
+Aggron @ Mago Berry
+Ability: Sturdy
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Adamant Nature
+- Metal Burst
+- Heavy Slam
+- Earthquake
+- Stone Edge

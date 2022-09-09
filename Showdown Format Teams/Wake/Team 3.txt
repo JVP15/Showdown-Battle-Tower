@@ -1,0 +1,29 @@
+Pelipper @ Choice Scarf
+Ability: Drizzle
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Hydro Pump
+- Hurricane
+- Ice Beam
+- U-turn
+
+Scizor @ Choice Band
+Ability: Technician
+Level: 50
+EVs: 236 HP / 252 Atk / 20 Def
+Adamant Nature
+- Bullet Punch
+- Quick Attack
+- Superpower
+- U-turn
+
+Kingdra @ Life Orb
+Ability: Swift Swim
+Level: 50
+EVs: 4 Atk / 252 SpA / 252 Spe
+Modest Nature
+- Hydro Pump
+- Dragon Pulse
+- Hurricane
+- Flash Cannon

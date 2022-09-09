@@ -1,0 +1,29 @@
+Rotom @ Jaboca Berry
+Ability: Levitate
+Level: 50
+EVs: 252 HP / 252 Def / 4 SpA
+Bold Nature
+- Hydro Pump
+- Thunderbolt
+- Volt Switch
+- Will-o-wisp
+
+Magnezone @ Custap Berry
+Ability: Sturdy
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Thunderbolt
+- Volt Switch
+- Flash Cannon
+- Body Press
+
+Luxray @ Sitrus Berry
+Ability: Intimidate
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Jolly Nature
+- Volt Switch
+- Thunder Wave
+- Ice Fang
+- Wild Charge

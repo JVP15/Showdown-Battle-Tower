@@ -1,0 +1,29 @@
+Ninetales @ Heat Rock
+Ability: Drought
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Flamethrower
+- Solar Beam
+- Will-o-wisp
+- Hex
+
+Rotom @ Choice Specs
+Ability: Levitate
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Thunderbolt
+- Leaf Storm
+- Volt Switch
+- Trick
+
+Venusaur @ Black Sludge
+Ability: Chlorophyll
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Giga Drain
+- Sleep Powder
+- Sludge Bomb
+- Earth Power

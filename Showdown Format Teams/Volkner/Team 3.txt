@@ -1,0 +1,29 @@
+Zapdos @ Choice Scarf
+Ability: Static
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Thunderbolt
+- Volt Switch
+- Heat Wave
+- Hurricane
+
+Rotom-Heat @ Sitrus Berry
+Ability: Levitate
+Level: 50
+EVs: 252 HP / 252 Def / 4 SpA
+Bold Nature
+- Overheat
+- Thunderbolt
+- Volt Switch
+- Will-o-wisp
+
+Swampert @ Life Orb
+Ability: Torrent
+Level: 50
+EVs: 252 HP / 252 Atk / 4 Def
+Adamant Nature
+- Earthquake
+- Waterfall
+- Ice Punch
+- Counter

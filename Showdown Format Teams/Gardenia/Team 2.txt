@@ -1,0 +1,29 @@
+Rotom @ Sitrus Berry
+Ability: Levitate
+Level: 50
+EVs: 252 HP / 252 SpA / 4 Spe
+Modest Nature
+- Thunderbolt
+- Leaf Storm
+- Volt Switch
+- Thunder Wave
+
+Milotic @ Life Orb
+Ability: Competitive
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Hypnosis
+- Ice Beam
+- Hydro Pump
+- Dragon Pulse
+
+Roserade @ Focus Sash
+Ability: Poison Point
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Leaf Storm
+- Sludge Bomb
+- Shadow Ball
+- Dazzling Gleam

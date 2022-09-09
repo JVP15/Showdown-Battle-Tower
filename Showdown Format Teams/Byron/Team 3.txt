@@ -1,0 +1,29 @@
+Metagross @ Lum Berry
+Ability: Clear Body
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Jolly Nature
+- Meteor Mash
+- Zen Headbutt
+- Ice Punch
+- Bullet Punch
+
+Scizor @ Sitrus Berry
+Ability: Technician
+Level: 50
+EVs: 236 HP / 252 Atk / 20 Def
+Adamant Nature
+- Bullet Punch
+- X-scissor
+- Roost
+- Swords Dance
+
+Heatran @ Focus Sash
+Ability: Flash Fire
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Magma Storm
+- Flash Cannon
+- Earth Power
+- Dragon Pulse

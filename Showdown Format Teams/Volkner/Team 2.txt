@@ -1,0 +1,29 @@
+Zapdos @ Sitrus Berry
+Ability: Static
+Level: 50
+EVs: 252 HP / 252 Def / 4 SpA
+Bold Nature
+- Thunderbolt
+- Volt Switch
+- Heat Wave
+- Hurricane
+
+Gyarados @ Lum Berry
+Ability: Intimidate
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Adamant Nature
+- Waterfall
+- Earthquake
+- Ice Fang
+- Dragon Dance
+
+Electivire @ Magnet
+Ability: Motor Drive
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Adamant Nature
+- Fire Punch
+- Ice Punch
+- Volt Switch
+- Wild Charge

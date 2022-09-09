@@ -1,0 +1,29 @@
+Abomasnow @ Icy Rock
+Ability: Snow Warning
+Level: 50
+EVs: 252 HP / 4 Atk / 252 SpA
+Modest Nature
+- Blizzard
+- Giga Drain
+- Earth Power
+- Ice Shard
+
+Regice @ Leftovers
+Ability: Ice Body
+Level: 50
+EVs: 172 HP / 252 Def / 84 SpA
+Bold Nature
+- Blizzard
+- Thunderbolt
+- Amnesia
+- Rest
+
+Cloyster @ Focus Sash
+Ability: Skill Link
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Adamant Nature
+- Shell Smash
+- Razor Shell
+- Icicle Spear
+- Rock Blast

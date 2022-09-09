@@ -1,0 +1,29 @@
+Dusknoir @ Mago Berry
+Ability: Pressure
+Level: 50
+EVs: 252 HP / 4 Def / 252 SpD
+Careful Nature
+- Pain Split
+- Curse
+- Will-o-wisp
+- Night Shade
+
+Crawdaunt @ Sitrus Berry
+Ability: Adaptability
+Level: 50
+EVs: 252 HP / 252 Atk / 4 Def
+Adamant Nature
+- Knock Off
+- Crabhammer
+- Swords Dance
+- Aqua Jet
+
+Gengar @ Focus Sash
+Ability: Cursed Body
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Shadow Ball
+- Sludge Bomb
+- Icy Wind
+- Destiny Bond

@@ -1,0 +1,29 @@
+Hitmontop @ Sitrus Berry
+Ability: Intimidate
+Level: 50
+EVs: 252 HP / 252 Atk / 4 Def
+Adamant Nature
+- Close Combat
+- Bulldoze
+- Bullet Punch
+- Fake Out
+
+Dragonite @ Lum Berry
+Ability: Multiscale
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Adamant Nature
+- Outrage
+- Earthquake
+- Fire Punch
+- Dragon Dance
+
+Lucario @ Focus Sash
+Ability: Inner Focus
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Focus Blast
+- Flash Cannon
+- Dark Pulse
+- Vacuum Wave

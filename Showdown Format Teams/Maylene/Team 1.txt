@@ -1,0 +1,29 @@
+Breloom @ Focus Sash
+Ability: Technician
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Jolly Nature
+- Spore
+- Mach Punch
+- Bullet Seed
+- Rock Tomb
+
+Blaziken @ Life Orb
+Ability: Speed Boost
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Jolly Nature
+- Protect
+- Flare Blitz
+- Close Combat
+- Rock Slide
+
+Empoleon @ Choice Scarf
+Ability: Torrent
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Modest Nature
+- Hydro Pump
+- Flash Cannon
+- Ice Beam
+- Grass Knot

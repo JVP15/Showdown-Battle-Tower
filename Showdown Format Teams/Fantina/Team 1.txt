@@ -1,0 +1,29 @@
+Shedinja @ Focus Sash
+Ability: Wonder Guard
+Level: 50
+EVs: 252 Atk / 4 Def / 252 Spe
+Adamant Nature
+- Shadow Claw
+- Leech Life
+- Shadow Sneak
+- Night Slash
+
+Dusknoir @ Mago Berry
+Ability: Pressure
+Level: 50
+EVs: 252 HP / 4 Def / 252 SpD
+Careful Nature
+- Pain Split
+- Curse
+- Will-o-wisp
+- Night Shade
+
+Mismagius @ Bright Powder
+Ability: Levitate
+Level: 50
+EVs: 4 HP / 252 SpA / 252 Spe
+Timid Nature
+- Shadow Ball
+- Mystical Fire
+- Thunderbolt
+- Nasty Plot

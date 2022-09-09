@@ -1,0 +1,29 @@
+Aerodactyl @ Lum Berry
+Ability: Unnerve
+Level: 50
+EVs: 4 HP / 252 Atk / 252 Spe
+Jolly Nature
+- Aerial Ace
+- Stone Edge
+- Earthquake
+- Iron Head
+
+Slowbro @ Leftovers
+Ability: Regenerator
+Level: 50
+EVs: 252 HP / 252 Def / 4 SpA
+Bold Nature
+- Scald
+- Grass Knot
+- Ice Beam
+- Slack Off
+
+Tyranitar @ Focus Sash
+Ability: Sand Stream
+Level: 50
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Dragon Dance
+- Rock Slide
+- Crunch
+- Ice Punch

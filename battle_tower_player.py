@@ -68,6 +68,7 @@ class BattleTowerPlayer(Player):
                              # one of them will be chosen.
         status_moves = [] # Any status category moves (moves that don't deal damage)
         high_priority_moves = [] # Moves like Attract, Will-O-Wisp, etc.
+        sleepables = []
 
         damage_calculator = SimpleDamageCalculator()
         if battle.available_moves:
@@ -89,9 +90,24 @@ class BattleTowerPlayer(Player):
 
             best_move = None
             best_damage = 0
-            print("Iterating over available_moves, which are currently:")
-            print(battle.available_moves)
-            for move in battle.available_moves:
+            available_moves = battle.available_moves
+
+            if battle.active_pokemon.status == Status.SLP:
+                for move in battle.available_moves:
+                    if not move.sleep_usable:
+                        continue
+
+                    if move.current_pp == 0:
+                        continue
+
+                    sleepables.append(move)
+
+            if len(sleepables) > 0:
+                available_moves = sleepables
+
+            print("Iterating over possible moves, which are currently:")
+            print(available_moves)
+            for move in available_moves:
                 print("Evaluating " + move.id + "...")
                 if move.current_pp == 0:
                     # Skip if out of PP.
@@ -171,6 +187,10 @@ class BattleTowerPlayer(Player):
                             high_priority_moves.append(move)
                             continue
 
+                    if move.id == "reflect":
+                        high_priority_moves.append(move)
+                        continue
+
                     print("Normal, viable status move. Adding to status move list.")
                     status_moves.append(move)
                     continue
@@ -180,9 +200,17 @@ class BattleTowerPlayer(Player):
                     print("It's fake out. Skipping due to turn counter.")
                     continue
                 elif move.id == "fakeout":
-                    # Otherwise, use it! One of the few scenarios where we want
-                    # to use it even if we have a potential KO.
-                    return self.create_order(move)
+                    # Now a high priority move.
+                    high_priority_moves.append(move)
+                    continue
+
+                if move.heal > 0 and battle.active_pokemon.current_hp_fraction == 1:
+                    print("Healing move, but we're max HP. Skipping.")
+                    continue
+
+                if move.id == "dreameater" and battle.opponent_active_pokemon.status != Status.SLP:
+                    # Dream eater only works on sleeping targets.
+                    continue
 
                 move_data = MOVES[move.id]
                 if "ohko" in move_data.keys() and move_data.get("ohko") and self.move_works_against_target(move, battle.active_pokemon, battle.opponent_active_pokemon):
@@ -216,14 +244,6 @@ class BattleTowerPlayer(Player):
                         simulated_damage = simulated_damage + damage_calculator.calculate(active_pokemon_stats, opponent_active_pokemon_stats, move_name)
                         hit_count = hit_count + 1
 
-                if not simulated_damage > 0 and self.move_works_against_target(
-                    move, battle.active_pokemon, battle.opponent_active_pokemon) and damage_calculator.check_for_error(active_pokemon_stats, opponent_active_pokemon_stats, move_name) == "OK":
-                    # If damage is 0, but move seems like it should work, the
-                    # calculator may be missing something, so treat it as a
-                    # normal status move for now.
-                    print(move.id + " simulated 0 damage but seems like it should do something. Adding as status option.")
-                    status_moves.append(move)
-
                 print("Damage simulated was " + str(simulated_damage))
 
                 if simulated_damage >= self.guess_current_hp(battle.opponent_active_pokemon):
@@ -233,10 +253,11 @@ class BattleTowerPlayer(Player):
                     continue
 
                 if self.utility_functions.move_drops_target_speed(move) and self.is_target_faster_than_user(battle.opponent_active_pokemon, battle.active_pokemon) and self.get_boost_for_stat(battle.opponent_active_pokemon.boosts, "spe") > -6:
-                    # Speed control is second only to potential KOs.
-                    print("Judged target to be faster than us, and " + move.id + " seems to lower speed. Adding to high priority moves.")
-                    high_priority_moves.append(move)
-                    continue
+                    if self.move_works_against_target(move, battle.active_pokemon, battle.opponent_active_pokemon):
+                        # Speed control is second only to potential KOs.
+                        print("Judged target to be faster than us, and " + move.id + " seems to lower speed. Adding to high priority moves.")
+                        high_priority_moves.append(move)
+                        continue
 
                 if simulated_damage > best_damage:
                     print("Which is greater than current best, which was " + str(best_damage) + ", updating best move to " + move_name)
@@ -246,12 +267,23 @@ class BattleTowerPlayer(Player):
             if len(top_priority_moves) > 0:
                 print("Selecting a potential KO move from " + str(len(top_priority_moves)) + " top priority moves:")
                 print(top_priority_moves)
+                print("Checking for moves with priority...")
+                priority_ko_moves = []
+                
+                for ko_move in top_priority_moves:
+                    if ko_move.priority > 0:
+                        priority_ko_moves.append(ko_move)
+
+                if len(priority_ko_moves) > 0:
+                    return self.create_order(random.choice(priority_ko_moves))
+                
                 return self.create_order(random.choice(top_priority_moves))
 
             # We don't see any potential KOs at present, so combine best damage move
             # with status moves into a single pool and set that as our current
             # best move.
             move_options = status_moves
+            highest_damage_move = best_move
 
             if best_move is not None:
                 move_options.append(best_move)
@@ -262,41 +294,12 @@ class BattleTowerPlayer(Player):
             if len(move_options) > 0:
                 best_move = random.choice(move_options)
 
-            if battle.active_pokemon.current_hp_fraction < 0.5:
-                # We're damaged; check for healing moves.
-                print("Below 50% HP; checking for healing moves...")
-                best_heal = 0
-                best_heal_move = None
-                all_heals = []
-                for move in battle.available_moves:
-                    if move.current_pp == 0:
-                        continue
-
-                    if not self.utility_functions.move_heals_user(move):
-                        continue
-
-                    all_heals.append(move)
-
-                    if move.heal > best_heal:
-                        best_heal_move = move
-                        best_heal = move.heal
-
-                if best_heal > 0:
-                    print("Determined " + MOVES[best_heal_move.id].get("name", None) + " is best heal, using it.")
-                    return self.create_order(best_heal_move)
-                elif len(all_heals) > 0:
-                    # We don't have a move that literally heals us for a
-                    # percentage of our max hp, but we do have one or more
-                    # healing moves (maybe a drain move), so pick one at random.
-                    print("No great heals, but have sub-heals. Choosing one.")
-                    print(all_heals)
-                    sub_heal = random.choice(all_heals)
-                    print("Randomly chose " + sub_heal.id + " from options.")
-                    return self.create_order(sub_heal)
-
             if len(high_priority_moves) > 0:
                 print("1 or more high priority moves found:")
                 print(high_priority_moves)
+                if highest_damage_move is not None:
+                    print("Adding " + highest_damage_move.id + " to options, as it's our highest damage move.")
+                    high_priority_moves.append(highest_damage_move)
                 print("Selecting one.")
                 return self.create_order(random.choice(high_priority_moves))
 
@@ -310,7 +313,6 @@ class BattleTowerPlayer(Player):
                 print("No switches available! Choose random move.")
                 return self.choose_random_move(battle)
 
-            print("Randomly selected " + best_move.id + " from move options")            
             return self.create_order(best_move)
         elif len(battle.available_switches) > 0:
             self.active_pokemon_turn_counter = 0
@@ -465,6 +467,10 @@ class BattleTowerPlayer(Player):
 
         if "sleepUsable" in move_data.keys() and move_data.get("sleepUsable") and user.status != Status.SLP:
             # Can't use sleep usable move if we're not asleep.
+            return False
+
+        if "sleepUsable" not in move_data.keys() and user.status == Status.SLP:
+            # Conversely, can't use non-sleep usable moves when we ARE asleep.
             return False
 
         if move.target != "self" and Effect.SUBSTITUTE in list(target.effects.keys()):

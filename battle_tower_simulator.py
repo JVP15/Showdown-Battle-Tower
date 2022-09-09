@@ -24,6 +24,47 @@ async def main():
         if len(lines) > 0:
             player_to_challenge = lines[0].strip()
 
+    # Check for stress test file.
+    stress_test_path = '.\\config\\stress_test_team.txt'
+    if os.path.exists(stress_test_path):
+        with open(stress_test_path) as stress_test_file:
+            lines = stress_test_file.readlines()
+            if len(lines) == 1:
+                team_to_stress_test = lines[0].strip()
+                stress_test_team_path = '.\\config\\Challenger Teams\\' + team_to_stress_test + ".txt"
+                with open(stress_test_team_path) as stress_test_team_file:
+                    print("Opened challenger team file at " + stress_test_team_path)
+                    sdn_challenger_team = stress_test_team_file.read()
+                    battle_count = 0
+                    matchups = team_provider.get_worst_matchups_in_master(sdn_challenger_team)
+                    #skip_target = 7 # Brant
+                    #skip_target = 8 # Celina
+                    #skip_target = 9 # Josie Team 4
+                    #skip_target = 10 # Edmund
+                    #skip_target = 13 # Jaime Team 3
+                    skip_target = 0
+                    skip_count = 0
+                    for trainer_and_team in matchups:
+                        if skip_count < skip_target:
+                            skip_count = skip_count + 1
+                            print("Skipping " + trainer_and_team[0] + ", " + trainer_and_team[1] + ".")
+                            continue
+
+                        while True:
+                            fight_id = str(battle_count) + trainer_and_team[0] + trainer_and_team[1]
+                            player = BattleTowerPlayer(
+                                player_configuration=PlayerConfiguration(fight_id, None),
+                                battle_format="gen8bdsp3v3singles",
+                                server_configuration=LocalhostServerConfiguration,
+                                team=team_provider.get_specific_team(trainer_and_team[0], trainer_and_team[1])[1],
+                                log_level=10,
+                            )
+                
+                            await player.send_challenges(player_to_challenge, n_challenges=1)
+                            battle_count = battle_count + 1
+                            if player.n_won_battles == 0:
+                                break
+
     # Check for custom start point.
     start_point_path = '.\\config\\start_point.txt'
     master_mode = False
@@ -120,7 +161,7 @@ async def main():
             current_set = current_set + 1
             current_battle = 1
 
-        if os.path.exists(start_point_path):
+        if os.path.exists(start_point_path) and not master_mode:
             # Overwrite start point to save progress, if file exists.
             with open(start_point_path, 'w') as start_point_file:
                 start_point_file.writelines([str(current_set), '\n', str(current_battle)])

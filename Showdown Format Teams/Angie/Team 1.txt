@@ -1,0 +1,27 @@
+Gengar @ Mental Herb  
+Ability: Cursed Body  
+Level: 50  
+EVs: 252 HP / 253 Atk  
+Serious Nature  
+- Perish Song  
+- Will-O-Wisp  
+- Mean Look  
+- Drain Punch  
+
+Cloyster @ Focus Sash  
+Ability: Skill Link  
+Level: 50  
+EVs: 252 HP / 253 Atk  
+- Pin Missile  
+- Rock Blast  
+- Icicle Spear  
+- Shell Smash  
+
+Lapras @ King's Rock
+Ability: Water Absorb
+Level: 50  
+EVs: 252 HP / 253 Atk
+- Waterfall
+- Iron Head  
+- Zen Headbutt
+- Dragon Dance

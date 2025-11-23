@@ -8,16 +8,9 @@ try {
     // The package.json name was @smogon/calc
     calc = require('@smogon/calc');
 } catch (e) {
-    try {
-        // Fallback to relative path if node resolution fails
-        const CALC_PATH = path.resolve(__dirname, '../damage-calc/calc/dist');
-        calc = require(CALC_PATH);
-    } catch (e2) {
-        console.error("Failed to load damage-calc library.");
-        console.error(e);
-        console.error(e2);
-        process.exit(1);
-    }
+    console.error("Failed to load damage-calc library.");
+    console.error(e);
+    process.exit(1);
 }
 
 var { calculate, Pokemon, Move, Generations } = calc;

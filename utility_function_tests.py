@@ -1,5 +1,6 @@
 from utils import UtilityFunctions
-from poke_env.environment.move import Move
+from poke_env.battle.move import Move
+from poke_env.battle.pokemon import Pokemon
 import unittest
 
 class UtilityFunctionTests(unittest.TestCase):
@@ -26,33 +27,33 @@ class UtilityFunctionTests(unittest.TestCase):
 
     def test_is_move_negated_by_ability_success(self):
         # Own Tempo
-        confuse_ray = Move("confuseray")
+        confuse_ray = Move("confuseray", gen=8)
         self.assertFalse(self.utils.is_move_negated_by_ability(confuse_ray, "Mold Breaker", "Own Tempo"))
         self.assertTrue(self.utils.is_move_negated_by_ability(confuse_ray, "Adaptability", "Own Tempo"))
 
         # Oblivious
-        attract = Move("attract")
+        attract = Move("attract", gen=8)
         self.assertFalse(self.utils.is_move_negated_by_ability(attract, "Mold Breaker", "Oblivious"))
         self.assertTrue(self.utils.is_move_negated_by_ability(attract, "Adaptability", "Oblivious"))
-        taunt = Move("taunt")
+        taunt = Move("taunt", gen=8)
         self.assertFalse(self.utils.is_move_negated_by_ability(taunt, "Mold Breaker", "Oblivious"))
         self.assertTrue(self.utils.is_move_negated_by_ability(taunt, "Adaptability", "Oblivious"))
 
     def test_move_drops_speed_success(self):
         # Scary Face (expect true)
-        scary_face = Move("scaryface")
+        scary_face = Move("scaryface", gen=8)
         self.assertTrue(self.utils.move_drops_target_speed(scary_face))
 
         # Rock Tomb (expect true, secondary but 100% chance)
-        rock_tomb = Move("rocktomb")
+        rock_tomb = Move("rocktomb", gen=8)
         self.assertTrue(self.utils.move_drops_target_speed(rock_tomb))
 
         # Flamethrower (expect false)
-        flamethrower = Move("flamethrower")
+        flamethrower = Move("flamethrower", gen=8)
         self.assertFalse(self.utils.move_drops_target_speed(flamethrower))
 
         # Bubble (expect false, it can drop speed but isn't guaranteed to)
-        bubble = Move("bubble")
+        bubble = Move("bubble", gen=8)
         self.assertFalse(self.utils.move_drops_target_speed(bubble))
 
     def test_calculate_stat_fraction_success(self):
@@ -72,16 +73,19 @@ class UtilityFunctionTests(unittest.TestCase):
 
     def test_is_setup_move_success(self):
         # Yes, this charmander knows charge beam.
-        charmander = Pokemon("charmander")
+        charmander = Pokemon(gen=8, species="charmander")
 
         # Swords Dance (true)
-        swords_dance = Move("swordsdance")
+        swords_dance = Move("swordsdance", gen=8)
         self.assertTrue(self.utils.is_setup_move(charmander, swords_dance))
 
         # Flamethrower (false)
-        flamethrower = Move("flamethrower")
+        flamethrower = Move("flamethrower", gen=8)
         self.assertFalse(self.utils.is_setup_move(charmander, flamethrower))
 
         # Charge Beam (false)
-        charge_beam = Move("chargebeam")
+        charge_beam = Move("chargebeam", gen=8)
         self.assertFalse(self.utils.is_setup_move(charmander, charge_beam))
+
+if __name__ == '__main__':
+    unittest.main()

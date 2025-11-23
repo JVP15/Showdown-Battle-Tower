@@ -1,10 +1,14 @@
-from poke_env.data import POKEDEX
-from poke_env.environment.pokemon import Pokemon
-from poke_env.environment.pokemon_type import PokemonType
+from poke_env.data import GenData
+from poke_env.battle.pokemon import Pokemon
+from poke_env.battle.pokemon_type import PokemonType
 from ability_dex import AbilityDex
 import random
 
 class UtilityFunctions():
+    def __init__(self):
+        self.gen_data = GenData.from_gen(8)
+        self.pokedex = self.gen_data.pokedex
+
     def move_targets_single_pokemon(self, move_target: str):
         match move_target:
             case "adjacentAlly":
@@ -27,7 +31,7 @@ class UtilityFunctions():
         return False
 
     def get_or_guess_ability(self, pokemon):
-        pokedex_entry = POKEDEX[pokemon.species]
+        pokedex_entry = self.pokedex[pokemon.species]
         poss_abilities = list(pokedex_entry.get('abilities').values())
         ability = None
 

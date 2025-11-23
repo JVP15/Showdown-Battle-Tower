@@ -1,5 +1,5 @@
-from poke_env.data import POKEDEX
-from poke_env.environment.pokemon import Pokemon
+from poke_env.data import GenData
+from poke_env.battle.pokemon import Pokemon
 from utils import UtilityFunctions
 
 class DamageCalculatorFormatPokemon():
@@ -7,7 +7,9 @@ class DamageCalculatorFormatPokemon():
         self,
         pokemon: Pokemon
     ) -> None:
-        pokedex_entry = POKEDEX[pokemon.species]
+        self.gen_data = GenData.from_gen(8)
+        self.pokedex = self.gen_data.pokedex
+        pokedex_entry = self.pokedex[pokemon.species]
         print(pokedex_entry)
         self.species = pokedex_entry.get('name')
         

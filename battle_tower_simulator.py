@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from poke_env.player_configuration import PlayerConfiguration
-from poke_env.server_configuration import LocalhostServerConfiguration
+from poke_env.ps_client.account_configuration import AccountConfiguration
+from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 from showdown_team_provider import ShowdownTeamProvider
 from battle_tower_player import BattleTowerPlayer
 import random
@@ -53,8 +53,9 @@ async def main():
                         while True:
                             fight_id = str(battle_count) + trainer_and_team[0] + trainer_and_team[1]
                             player = BattleTowerPlayer(
-                                player_configuration=PlayerConfiguration(fight_id, None),
-                                battle_format="gen8bdsp3v3singles",
+                                account_configuration=AccountConfiguration(fight_id, None),
+                                #battle_format="gen8bdsp3v3singles",
+                                battle_format="gen8customgame",
                                 server_configuration=LocalhostServerConfiguration,
                                 team=team_provider.get_specific_team(trainer_and_team[0], trainer_and_team[1])[1],
                                 log_level=10,
@@ -93,8 +94,9 @@ async def main():
 
                 while True:
                     player = BattleTowerPlayer(
-                        player_configuration=PlayerConfiguration(trainer_name, None),
-                        battle_format="gen8bdsp3v3singles",
+                        account_configuration=AccountConfiguration(trainer_name, None),
+                        #battle_format="gen8bdsp3v3singles",
+                        battle_format="gen8customgame",
                         server_configuration=LocalhostServerConfiguration,
                         team=trainer_name_and_team[1],
                         log_level=10,
@@ -138,8 +140,9 @@ async def main():
             used_trainer_names.append(trainer_name)
     
             player = BattleTowerPlayer(
-                player_configuration=PlayerConfiguration(trainer_name, None),
-                battle_format="gen8bdsp3v3singles",
+                account_configuration=AccountConfiguration(trainer_name, None),
+                #battle_format="gen8bdsp3v3singles",
+                battle_format="gen8customgame",
                 server_configuration=LocalhostServerConfiguration,
                 team=trainer_name_and_team[1],
                 log_level=10,

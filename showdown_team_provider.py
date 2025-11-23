@@ -3,8 +3,8 @@ import csv
 from os import listdir
 from os.path import isfile, join
 from showdown_team_parser import ShowdownTeamParser
-from poke_env.environment.pokemon import Pokemon
-from poke_env.environment.move import Move
+from poke_env.battle.pokemon import Pokemon
+from poke_env.battle.move import Move
 
 class ShowdownTeamProvider:
     def __init__(self):
@@ -35,14 +35,14 @@ class ShowdownTeamProvider:
             csv_file.close()
 
     def get_specific_team(self, trainer_name, team_name):
-        team_file_path = ".\\Showdown Format Teams\\" + trainer_name + "\\" + team_name + ".txt"
+        team_file_path = join("Showdown Format Teams", trainer_name, team_name + ".txt")
         team_file = open(team_file_path)
         team = team_file.read()
         team_file.close()
         return [trainer_name, team]
 
     def read_teams(self, trainer_name, set_name):
-        trainer_file_path = "C:\\Code\\showdown-parser\\Trainer CSVs\\" + trainer_name + ".csv"
+        trainer_file_path = join("Trainer CSVs", trainer_name + ".csv")
         trainer_file = open(trainer_file_path)
         csv_reader = csv.reader(trainer_file)
         line = []
@@ -102,14 +102,14 @@ class ShowdownTeamProvider:
                 # Check each MC team pokemon's offensive and defensive capabilities
                 # vs each of the challenger team's pokemon.
                 for mc_pokemon in mc_team.values():
-                    mc_poke_env_pokemon = Pokemon(species=self.get_id(mc_pokemon["species"]))
+                    mc_poke_env_pokemon = Pokemon(gen=8, species=self.get_id(mc_pokemon["species"]))
                     
                     for challenger_pokemon in challenger_team.values():
-                        challenger_poke_env_pokemon = Pokemon(species=self.get_id(challenger_pokemon["species"]))
+                        challenger_poke_env_pokemon = Pokemon(gen=8, species=self.get_id(challenger_pokemon["species"]))
 
                         # Increase rating based on how good our moves are against challenger pokemon.
                         for move in mc_pokemon["moves"]:
-                            mc_poke_env_move = Move(self.get_id(move))
+                            mc_poke_env_move = Move(self.get_id(move), gen=8)
 
                             if mc_poke_env_move.base_power == 0:
                                 # Ignore non-damaging moves.
@@ -119,7 +119,7 @@ class ShowdownTeamProvider:
 
                         # Decrease based on how good challenger pokemon's moves are against us.
                         for move in challenger_pokemon["moves"]:
-                            challenger_poke_env_move = Move(self.get_id(move))
+                            challenger_poke_env_move = Move(self.get_id(move), gen=8)
 
                             if challenger_poke_env_move.base_power == 0:
                                 # Ignore non-damaging moves.

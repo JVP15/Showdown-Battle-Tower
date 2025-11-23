@@ -1,63 +1,53 @@
-from poke_env.environment.effect import Effect
-from poke_env.environment.status import Status
-from poke_env.environment.move_category import MoveCategory
-from poke_env.environment.field import Field
-from poke_env.environment.pokemon_gender import PokemonGender
-from poke_env.player.player import Player
-from poke_env.player_configuration import PlayerConfiguration
-from poke_env.server_configuration import ServerConfiguration
-from poke_env.teambuilder.teambuilder import Teambuilder
-from damage_calc_by_post import SimpleDamageCalculator
-from poke_env.data import MOVES
-from poke_env.data import POKEDEX
-from damage_calculator_format_pokemon import DamageCalculatorFormatPokemon
-from showdown_team_parser import ShowdownTeamParser
-from utils import UtilityFunctions
 import random
 import math
-from typing import Optional, Union
+import os
+import csv
+import json
 from os import listdir
 from os.path import isfile, join
-import os.path
+
+from poke_env.player.player import Player
+from poke_env.player.battle_order import BattleOrder
+from poke_env.ps_client.account_configuration import AccountConfiguration
+from poke_env.ps_client.server_configuration import ServerConfiguration
+from poke_env.battle.effect import Effect
+from poke_env.battle.status import Status
+from poke_env.battle.move_category import MoveCategory
+from poke_env.battle.field import Field
+from poke_env.battle.pokemon_gender import PokemonGender
+from poke_env.data.gen_data import GenData
+
+from damage_calc_by_post import SimpleDamageCalculator
+from damage_calculator_format_pokemon import DamageCalculatorFormatPokemon
+from utils import UtilityFunctions
+from showdown_team_parser import ShowdownTeamParser
 
 class BattleTowerPlayer(Player):
-    def __init__(
-        self,
-        player_configuration: Optional[PlayerConfiguration] = None,
-        *,
-        avatar: Optional[int] = None,
-        battle_format: Optional[str] = None,
-        log_level: Optional[int] = None,
-        max_concurrent_battles: int = 1,
-        save_replays: Union[bool, str] = False,
-        server_configuration: Optional[ServerConfiguration] = None,
-        start_timer_on_battle_start: bool = False,
-        start_listening: bool = True,
-        team: Optional[Union[str, Teambuilder]] = None,
-    ):
-        # Cache our own team deets for use in damage calculation later.
-        showdown_team_parser = ShowdownTeamParser()
-        self.team_directory = showdown_team_parser.parse_team(team)
-        self.opponent_team_directory = {}
-        self.active_pokemon_turn_counter = 0
-        self.utility_functions = UtilityFunctions()
-
+    def __init__(self,
+                 account_configuration: AccountConfiguration,
+                 server_configuration: ServerConfiguration,
+                 #battle_format="gen8bdsp3v3singles",
+                 battle_format="gen8customgame",
+                 team=None,
+                 save_replays=False,
+                 log_level=10):
         super().__init__(
-            player_configuration=player_configuration,
-            avatar=avatar,
-            battle_format=battle_format,
-            log_level=log_level,
-            max_concurrent_battles=max_concurrent_battles,
-            save_replays=save_replays,
+            account_configuration=account_configuration,
             server_configuration=server_configuration,
-            start_timer_on_battle_start=start_timer_on_battle_start,
-            start_listening=start_listening,
+            battle_format=battle_format,
             team=team,
+            save_replays=save_replays,
+            log_level=log_level
         )
+        self.gen_data = GenData.from_gen(8)
+        self.moves = self.gen_data.moves
+        self.pokedex = self.gen_data.pokedex
+        self.utility_functions = UtilityFunctions()
+        self.active_pokemon_turn_counter = 0
+        self.team_directory = {}
+        self.opponent_team_directory = {}
 
-    def choose_move(self, battle):
-        self.active_pokemon_turn_counter = self.active_pokemon_turn_counter + 1
-        # switch if about to faint due to Perish Song
+    def choose_move(self, battle) -> BattleOrder:
         if Effect.PERISH1 in battle.active_pokemon.effects:
             if battle.available_switches:
                 self.logger.debug("Found perish1, switching")
@@ -73,7 +63,11 @@ class BattleTowerPlayer(Player):
         damage_calculator = SimpleDamageCalculator()
         if battle.available_moves:
             print(battle.available_moves)
-            active_pokemon_stats = self.team_directory[self.pokemon_species(battle.active_pokemon.species)]
+            active_pokemon_stats = self.team_directory.get(self.pokemon_species(battle.active_pokemon.species))
+            if active_pokemon_stats is None:
+                 # Fallback if not in directory (e.g. random battle or testing)
+                 active_pokemon_stats = DamageCalculatorFormatPokemon(battle.active_pokemon).formatted()
+
             opponent_active_pokemon_stats = DamageCalculatorFormatPokemon(battle.opponent_active_pokemon).formatted()
 
             print("Checking if opponent_team_directory is populated...")
@@ -81,7 +75,7 @@ class BattleTowerPlayer(Player):
                 print("It is:")
                 print(self.opponent_team_directory)
                 # Use challenger's team stats to help with damage calculation.
-                opponent_active_pokemon_stats = self.opponent_team_directory[self.pokemon_species(battle.opponent_active_pokemon.species)]
+                opponent_active_pokemon_stats = self.opponent_team_directory.get(self.pokemon_species(battle.opponent_active_pokemon.species), opponent_active_pokemon_stats)
 
                 # The AI knows everything about the opposing Pokemon... unless its
                 # species has more than one ability to choose from. Get or guess that
@@ -114,7 +108,7 @@ class BattleTowerPlayer(Player):
                     print("Out of PP.")
                     continue
 
-                if move.id not in MOVES.keys():
+                if move.id not in self.moves.keys():
                     # Might be a forced "move" like recharging after a Hyper Beam
                     print("Couldn't find move in dict.")
                     continue
@@ -212,7 +206,7 @@ class BattleTowerPlayer(Player):
                     # Dream eater only works on sleeping targets.
                     continue
 
-                move_data = MOVES[move.id]
+                move_data = self.moves[move.id]
                 if "ohko" in move_data.keys() and move_data.get("ohko") and self.move_works_against_target(move, battle.active_pokemon, battle.opponent_active_pokemon):
                     # Treat OHKO moves as status moves priority; i.e.,
                     # equal chance to come out as best move, other status moves,
@@ -226,7 +220,7 @@ class BattleTowerPlayer(Player):
                     status_moves.append(move)
 
                 print("Simulating damage roll for " + move.id)
-                move_name = MOVES[move.id].get("name", None)
+                move_name = self.moves[move.id].get("name", None)
                 print("Simulating damage for " + move_name)
                 simulated_damage = 0
 
@@ -392,10 +386,10 @@ class BattleTowerPlayer(Player):
         return "/team 123"
 
     def pokemon_species(self, species_id):
-        if species_id not in POKEDEX.keys():
+        if species_id not in self.pokedex.keys():
             return species_id
 
-        return POKEDEX[species_id].get('name')
+        return self.pokedex[species_id].get('name')
 
     def guess_current_hp(self, pokemon):
         print("Guessing " + pokemon.species + "'s current HP.")
@@ -406,7 +400,7 @@ class BattleTowerPlayer(Player):
         return current_hp
 
     def guess_max_hp(self, pokemon):
-        pokedex_entry = POKEDEX[pokemon.species];
+        pokedex_entry = self.pokedex[pokemon.species];
         hp_base = pokedex_entry.get('baseStats').get('hp')
         iv = 31
         ev = 0
@@ -421,7 +415,7 @@ class BattleTowerPlayer(Player):
         return math.floor(0.01 * (2 * hp_base + iv + math.floor(0.25 * ev)) * pokemon.level) + pokemon.level + 10
 
     def move_works_against_target(self, move, user, target):
-        move_data = MOVES[move.id]
+        move_data = self.moves[move.id]
 
         if move.status is not None and target.status is not None:
             # Pokemon can only have one major status ailment at a time.
@@ -545,11 +539,15 @@ class BattleTowerPlayer(Player):
         pokemon_name = self.pokemon_species(pokemon.species)
 
         if is_own:
-            stat_block = self.team_directory[self.pokemon_species(pokemon.species)]
+            stat_block = self.team_directory.get(self.pokemon_species(pokemon.species))
         else:
-            stat_block = self.opponent_team_directory[self.pokemon_species(pokemon.species)]
+            stat_block = self.opponent_team_directory.get(self.pokemon_species(pokemon.species))
+        
+        if stat_block is None:
+             # Fallback
+             return self.pokedex[pokemon.species].get("baseStats").get("spe")
 
-        base_speed = POKEDEX[pokemon.species].get("baseStats").get("spe")
+        base_speed = self.pokedex[pokemon.species].get("baseStats").get("spe")
         iv = self.utility_functions.get_iv_from_stat_block(stat_block, "spe")
         ev = self.utility_functions.get_ev_from_stat_block(stat_block, "spe")
 

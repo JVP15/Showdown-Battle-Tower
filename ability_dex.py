@@ -1,10 +1,13 @@
-from poke_env.data import POKEDEX
+from poke_env.data.gen_data import GenData
 
 class AbilityDex():
     def __init__(self):
         self.ability_dex = {}
+        # Initialize GenData for generation 8
+        self.gen_data = GenData.from_gen(8)
+        self.pokedex = self.gen_data.pokedex
 
-        for pokemon in POKEDEX.values():
+        for pokemon in self.pokedex.values():
             abilities = pokemon.get('abilities').values()
 
             for ability in abilities:

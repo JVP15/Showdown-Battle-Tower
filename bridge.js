@@ -17,20 +17,12 @@ var { calculate, Pokemon, Move, Generations } = calc;
 
 const GEN = Generations.get(8);
 
-function readStdin() {
-    return new Promise((resolve, reject) => {
-        let data = '';
-        process.stdin.on('data', chunk => data += chunk);
-        process.stdin.on('end', () => resolve(data));
-        process.stdin.on('error', reject);
-    });
-}
-
 async function main() {
     try {
-        const input = await readStdin();
+        const input = process.argv[2];
         if (!input) {
-            return; // No input, just exit
+            console.error("No input provided as argument.");
+            process.exit(1);
         }
 
         const data = JSON.parse(input);
@@ -62,7 +54,6 @@ async function main() {
         });
 
         const move = new Move(GEN, moveName);
-
         const result = calculate(GEN, attacker, defender, move);
 
         // Format output to match what Python expects
@@ -90,7 +81,6 @@ async function main() {
                 // But random.choice implies we pick ONE possible outcome.
                 // If we have [ [10, 11], [10, 11] ], possible outcomes are 20, 21, 21, 22.
                 // For simplicity, let's just flatten if it's simple array, but for multi-hit it's complex.
-                // Let's look at how result.desc() handles it.
 
                 // For now, let's just return the raw damage structure and let Python handle it if it's simple,
                 // but Python expects a list of numbers.
@@ -114,7 +104,6 @@ async function main() {
 
         const output = {
             damage: damageRolls,
-            desc: result.desc()
         };
 
         console.log(JSON.stringify(output));

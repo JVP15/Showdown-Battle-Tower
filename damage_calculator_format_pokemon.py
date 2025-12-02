@@ -16,11 +16,7 @@ class DamageCalculatorFormatPokemon():
         utils = UtilityFunctions()
         self.ability = utils.get_or_guess_ability(pokemon)
 
-        if pokemon.item is None:
-            # API requires a non-null value for hold item.
-            self.item = "no_item"
-        else:
-            self.item = pokemon.item
+        self.item = pokemon.item
 
         self.level = pokemon.level
 
@@ -28,7 +24,7 @@ class DamageCalculatorFormatPokemon():
         return {
             "species": self.species, #species name AS IT IS IN THE POKEDEX  [REQUIRED]
             "ability": self.ability, #ability [REQUIRED]
-            "item": self.item,  #item [REQUIRED]
+            "item": self.item,  #item
             "level": self.level, #level [REQUIRED], must be a number
         }
 

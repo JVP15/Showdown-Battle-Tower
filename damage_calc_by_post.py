@@ -4,51 +4,44 @@ import os
 import random
 
 class SimpleDamageCalculator():
-    # Expected format:
-    #    attackerObject = {
-    #    "species": "Serperior", //species name AS IT IS IN THE POKEDEX  [REQUIRED]
-    #    "ability": "Contrary", //ability [REQUIRED]
-    #    "item": "Leftovers",  //item [REQUIRED]
-    #    "level": 100, //level [REQUIRED], must be a number
-    #    "nature": "Modest", //not required, defaults to serious
-    #    "evs": {"spa": 252, "spe": 252},  //not required, defaults to 0 in all stats. Valid stats are "hp", "atk", "spa", "def", "spd", "spe"
-    #    "ivs": {"atk": 0} //not required, defaults to 31 in any stat not specified
-    #}
-    def calculate(self, attacker, defender, move):
+    def calculate(self, attacker: dict[str, str | int], defender: dict[str, str | int], move: str):
         #attackerObject = {
         #    "species": attacker.species, #species name AS IT IS IN THE POKEDEX  [REQUIRED]
         #    "ability": attacker.ability, #ability [REQUIRED]
-        #    "item": attacker.item,  #item [REQUIRED]
+        #    "item": attacker.item,  #item 
         #    "level": 50, #level [REQUIRED], must be a number
         #}
 
         #defenderObject = {
         #    "species": defender.species, #species name AS IT IS IN THE POKEDEX  [REQUIRED]
         #    "ability": defender.ability, #ability [REQUIRED]
-        #    "item": defender.item,  #item [REQUIRED]
+        #    "item": defender.item,  #item 
         #    "level": 50, #level [REQUIRED], must be a number
         #}
-
-        print(attacker)
-        print(defender)
+        # Poke env uses 'unknown_item' when the item isn't known, but that doesn't play nice with the bridge so we take it out
+        attacker = attacker.copy()
+        if 'item' in attacker and attacker['item'] == 'unknown_item':
+            del attacker['item']
+        
+        defender = defender.copy()
+        if 'item' in defender and defender['item'] == 'unknown_item':
+            del defender['item']
         
         payload = { 'attacker': attacker, 'defender': defender, 'move': move }
-        
-        # Path to bridge.js
+
         bridge_path = os.path.join(os.path.dirname(__file__), 'bridge.js')
-        
         try:
+            json_payload = json.dumps(payload)
             process = subprocess.Popen(
-                ['node', bridge_path],
-                stdin=subprocess.PIPE,
+                ['node', bridge_path, json_payload],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 encoding='utf-8'
             )
             
-            stdout, stderr = process.communicate(input=json.dumps(payload))
-            
+            stdout, stderr = process.communicate()
+
             if stderr:
                 print("Error from bridge.js:")
                 print(stderr)
@@ -58,7 +51,6 @@ class SimpleDamageCalculator():
                 return 0
                 
             jsonResult = json.loads(stdout)
-            # print(jsonResult) # Debugging
 
             if 'error' in jsonResult:
                 # Something went wrong. Print error and return 0.
@@ -84,16 +76,16 @@ class SimpleDamageCalculator():
         bridge_path = os.path.join(os.path.dirname(__file__), 'bridge.js')
         
         try:
+            json_payload = json.dumps(payload)
             process = subprocess.Popen(
-                ['node', bridge_path],
-                stdin=subprocess.PIPE,
+                ['node', bridge_path, json_payload],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 encoding='utf-8'
             )
             
-            stdout, stderr = process.communicate(input=json.dumps(payload))
+            stdout, stderr = process.communicate()
             
             if stderr:
                 return f"Bridge Error: {stderr}"

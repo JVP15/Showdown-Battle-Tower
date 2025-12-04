@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import logging
+import os.path
+import random
 
 from poke_env.ps_client.account_configuration import AccountConfiguration
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 from showdown_team_provider import ShowdownTeamProvider
 from battle_tower_player import BattleTowerPlayer
-import random
-import os.path
+
+LOG_LEVEL = logging.INFO
 
 async def main():
     team_provider = ShowdownTeamProvider()
@@ -58,7 +61,7 @@ async def main():
                                 battle_format="gen8customgame",
                                 server_configuration=LocalhostServerConfiguration,
                                 team=team_provider.get_specific_team(trainer_and_team[0], trainer_and_team[1])[1],
-                                log_level=10,
+                                log_level=LOG_LEVEL,
                             )
                 
                             await player.send_challenges(player_to_challenge, n_challenges=1)
@@ -99,7 +102,7 @@ async def main():
                         battle_format="gen8customgame",
                         server_configuration=LocalhostServerConfiguration,
                         team=trainer_name_and_team[1],
-                        log_level=10,
+                        log_level=LOG_LEVEL,
                     )
                 
                     await player.send_challenges(player_to_challenge, n_challenges=1)
@@ -124,7 +127,7 @@ async def main():
     
             # Get random trainer and team from set.
             trainer_name_and_team = rematch_trainer_name_and_team
-
+            
             if not rematch:
                 trainer_name_and_team = team_provider.get_random_team(set_name)
 
@@ -145,7 +148,7 @@ async def main():
                 battle_format="gen8customgame",
                 server_configuration=LocalhostServerConfiguration,
                 team=trainer_name_and_team[1],
-                log_level=10,
+                log_level=LOG_LEVEL,
             )
         
             # Sending challenges to 'your_username'.
@@ -159,7 +162,7 @@ async def main():
             else:
                 rematch = True
                 rematch_trainer_name_and_team = trainer_name_and_team
-
+                
         else:
             current_set = current_set + 1
             current_battle = 1

@@ -3,6 +3,9 @@ from poke_env.battle.pokemon import Pokemon
 from poke_env.battle.pokemon_type import PokemonType
 from ability_dex import AbilityDex
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UtilityFunctions():
     def __init__(self):
@@ -49,9 +52,7 @@ class UtilityFunctions():
         return ability
 
     def is_move_negated_by_ability(self, move, user_ability, target_ability):
-        print(move)
-        print(user_ability)
-        print(target_ability)
+        logger.debug("Checking ability negation for move: %s, user_ability: %s, target_ability: %s", move.id, user_ability, target_ability)
         if user_ability == "Mold Breaker":
             # Mold Breaker ignores target's ability.
             return False
@@ -161,12 +162,12 @@ class UtilityFunctions():
         return 1.0
 
     def move_does_no_damage(self, move):
-        print("Checking if move does damage...")
+        logger.debug("Checking if move %s does damage...", move.id)
         if move.damage == 0 and move.base_power == 0:
-            print("Move does not do damage.")
+            logger.debug("Move does not do damage.")
             return True
 
-        print("Move does damage.")
+        logger.debug("Move does damage.")
         return False
 
     def is_useable_setup_move(self, user, move):
@@ -192,7 +193,7 @@ class UtilityFunctions():
             special_attack_boost = move.boosts["spa"]
 
         if "evasion" in move.boosts.keys():
-            print("Evasion boost is: " + str(move.boosts["evasion"]))
+            logger.debug("Evasion boost is: %s", move.boosts["evasion"])
             evasion_boost = move.boosts["evasion"]
 
         if attack_boost < 1 and special_attack_boost < 1 and evasion_boost < 1:
@@ -209,13 +210,13 @@ class UtilityFunctions():
             user_special_attack_stage = user.boosts["spa"]
 
         if "evasion" in user.boosts.keys():
-            print("User evasion stage currently: " + str(user.boosts["evasion"]))
+            logger.debug("User evasion stage currently: %s", user.boosts["evasion"])
             user_evasion_stage = user.boosts["evasion"]
 
         boosted_atk = min(user_attack_stage + attack_boost, 6)
         boosted_spa = min(user_special_attack_stage + special_attack_boost, 6)
         boosted_eva = min(user_evasion_stage + evasion_boost, 6)
-        print("Calculated user evasion stage after boosting to be: " + str(boosted_eva))
+        logger.debug("Calculated user evasion stage after boosting to be: %s", boosted_eva)
 
         if boosted_atk == user_attack_stage and boosted_spa == user_special_attack_stage and boosted_eva == user_evasion_stage:
             # In other words, would boosting effectively do nothing at all to either
@@ -230,20 +231,18 @@ class UtilityFunctions():
             # buff in the move database. Basically, it buffs non-ghost types.
             return True
 
-        print("Checking if " + move.id + " buffs user...")
-        print("Checking move target...")
+        logger.debug("Checking if %s buffs user...", move.id)
+        logger.debug("Checking move target...")
         if move.target != "self":
-            print("Move doesn't target self.")
+            logger.debug("Move doesn't target self.")
             return False
 
-        print("Move.boosts are:")
-        print(move.boosts)
+        logger.debug("Move.boosts are: %s", move.boosts)
         if move.boosts is None:
             return False
 
-        print(move.id + " has boosts. Checking to see if they buff user...")
-        print("boost values are:")
-        print(move.boosts.values())
+        logger.debug("%s has boosts. Checking to see if they buff user...", move.id)
+        logger.debug("boost values are: %s", move.boosts.values())
         for boost in move.boosts.values():
             if boost > 0:
                 return True

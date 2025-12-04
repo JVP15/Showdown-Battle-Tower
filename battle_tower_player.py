@@ -3,6 +3,7 @@ import math
 import os
 import csv
 import json
+import logging
 from os import listdir
 from os.path import isfile, join
 
@@ -30,7 +31,7 @@ class BattleTowerPlayer(Player):
                  battle_format="gen8customgame",
                  team=None,
                  save_replays=False,
-                 log_level=10):
+                 log_level=logging.INFO):
         super().__init__(
             account_configuration=account_configuration,
             server_configuration=server_configuration,
@@ -62,7 +63,7 @@ class BattleTowerPlayer(Player):
 
         damage_calculator = SimpleDamageCalculator()
         if battle.available_moves:
-            print(battle.available_moves)
+            self.logger.debug("Available moves: %s", battle.available_moves)
             active_pokemon_stats = self.team_directory.get(self.pokemon_species(battle.active_pokemon.species))
             if active_pokemon_stats is None:
                  # Fallback if not in directory (e.g. random battle or testing)
@@ -70,10 +71,9 @@ class BattleTowerPlayer(Player):
 
             opponent_active_pokemon_stats = DamageCalculatorFormatPokemon(battle.opponent_active_pokemon).formatted()
 
-            print("Checking if opponent_team_directory is populated...")
+            self.logger.debug("Checking if opponent_team_directory is populated...")
             if len(self.opponent_team_directory.keys()) > 0:
-                print("It is:")
-                print(self.opponent_team_directory)
+                self.logger.debug("It is: %s", self.opponent_team_directory)
                 # Use challenger's team stats to help with damage calculation.
                 opponent_active_pokemon_stats = self.opponent_team_directory.get(self.pokemon_species(battle.opponent_active_pokemon.species), opponent_active_pokemon_stats)
 
@@ -99,58 +99,57 @@ class BattleTowerPlayer(Player):
             if len(sleepables) > 0:
                 available_moves = sleepables
 
-            print("Iterating over possible moves, which are currently:")
-            print(available_moves)
+            self.logger.debug("Iterating over possible moves, which are currently: %s", available_moves)
             for move in available_moves:
-                print("Evaluating " + move.id + "...")
+                self.logger.debug("Evaluating %s...", move.id)
                 if move.current_pp == 0:
                     # Skip if out of PP.
-                    print("Out of PP.")
+                    self.logger.debug("Out of PP.")
                     continue
 
                 if move.id not in self.moves.keys():
                     # Might be a forced "move" like recharging after a Hyper Beam
-                    print("Couldn't find move in dict.")
+                    self.logger.debug("Couldn't find move in dict.")
                     continue
 
                 # Special handling for status moves.
                 if move.category == MoveCategory.STATUS:
                     # If it's a move we can use, add it to status moves list.
-                    print("It's a status move...")
+                    self.logger.debug("It's a status move...")
                     
                     if Effect.TAUNT in battle.active_pokemon.effects:
                         # Can't use status moves while taunted.
-                        print("Taunted, can't use.")
+                        self.logger.debug("Taunted, can't use.")
                         continue
 
                     if self.utility_functions.move_heals_user(move) and self.utility_functions.move_does_no_damage(move):
                         # Heal logic is handled elsewhere.
-                        print("Healing move, handle elsewhere.")
+                        self.logger.debug("Healing move, handle elsewhere.")
                         continue
 
                     if move.target != "self" and not self.move_works_against_target(move, battle.active_pokemon, battle.opponent_active_pokemon):
                         # Skip if move targets a foe but foe is immune to it.
-                        print("Foe immune to move.")
+                        self.logger.debug("Foe immune to move.")
                         continue
                     elif move.target == "self" and not self.move_works_against_target(move, battle.active_pokemon, battle.active_pokemon):
                         # Skip if we can't use move on ourself (e.g. Substitute while Substitute is active)
-                        print("Can't use this move on ourselves for some reason.")
+                        self.logger.debug("Can't use this move on ourselves for some reason.")
                         continue
 
                     if move.weather != None and move.weather in battle.weather.keys():
                         # Don't use weather move if weather for move already active.
-                        print("Weather already active.")
+                        self.logger.debug("Weather already active.")
                         continue
 
                     if move.pseudo_weather != None and self.is_id_in_enum_dict(move.pseudo_weather, battle.fields):
                         # E.g. don't use Trick Room when it's already up.
-                        print("pseudo_weather already active.")
+                        self.logger.debug("pseudo_weather already active.")
                         continue
 
                     if move.side_condition != None and self.is_id_in_enum_dict(
                         move.side_condition, battle.side_conditions):
                         # E.g. don't use light screen when it's already up.
-                        print("Side condition already active.")
+                        self.logger.debug("Side condition already active.")
                         continue
 
                     # TODO: Check slot condition (e.g. Wish)
@@ -158,13 +157,13 @@ class BattleTowerPlayer(Player):
                     if self.utility_functions.move_buffs_user(battle.active_pokemon, move) and self.utility_functions.move_boosts_are_useless(battle.active_pokemon, move):
                         # This move boosts stats, but all of the stats it boosts
                         # are already at maximum boost level.
-                        print("Move boosts stats, but all stats it boosts are already maxed. Skipping.")
+                        self.logger.debug("Move boosts stats, but all stats it boosts are already maxed. Skipping.")
                         continue
 
                     if self.utility_functions.move_drops_target_speed(move) and self.is_target_faster_than_user(battle.opponent_active_pokemon, battle.active_pokemon) and self.get_boost_for_stat(battle.opponent_active_pokemon.boosts, "spe") > -6:
                         # This move drops the opponent's speed, they're faster than us, AND they're not
                         # at minimum speed yet.
-                        print("It controls speed, opponent is faster, and opponent isn't at min speed. Adding to high priority moves.")
+                        self.logger.debug("It controls speed, opponent is faster, and opponent isn't at min speed. Adding to high priority moves.")
                         high_priority_moves.append(move)
                         continue
 
@@ -175,9 +174,9 @@ class BattleTowerPlayer(Player):
                         continue
 
                     if move.status != None or move.volatile_status != None:
-                        print("It inflicts either a primary or secondary status.")
+                        self.logger.debug("It inflicts either a primary or secondary status.")
                         if self.is_high_priority_status_move(move, battle.active_pokemon, battle.opponent_active_pokemon):
-                            print("Status is high priority. Adding to high priority moves.")
+                            self.logger.debug("Status is high priority. Adding to high priority moves.")
                             high_priority_moves.append(move)
                             continue
 
@@ -185,13 +184,13 @@ class BattleTowerPlayer(Player):
                         high_priority_moves.append(move)
                         continue
 
-                    print("Normal, viable status move. Adding to status move list.")
+                    self.logger.debug("Normal, viable status move. Adding to status move list.")
                     status_moves.append(move)
                     continue
 
                 if move.id == "fakeout" and self.active_pokemon_turn_counter > 1:
                     # Fake Out only works on the first turn, so skip.
-                    print("It's fake out. Skipping due to turn counter.")
+                    self.logger.debug("It's fake out. Skipping due to turn counter.")
                     continue
                 elif move.id == "fakeout":
                     # Now a high priority move.
@@ -199,7 +198,7 @@ class BattleTowerPlayer(Player):
                     continue
 
                 if move.heal > 0 and battle.active_pokemon.current_hp_fraction == 1:
-                    print("Healing move, but we're max HP. Skipping.")
+                    self.logger.debug("Healing move, but we're max HP. Skipping.")
                     continue
 
                 if move.id == "dreameater" and battle.opponent_active_pokemon.status != Status.SLP:
@@ -219,9 +218,9 @@ class BattleTowerPlayer(Player):
                     # Treat as status moves.
                     status_moves.append(move)
 
-                print("Simulating damage roll for " + move.id)
+                self.logger.debug("Simulating damage roll for %s", move.id)
                 move_name = self.moves[move.id].get("name", None)
-                print("Simulating damage for " + move_name)
+                self.logger.debug("Simulating damage for %s", move_name)
                 simulated_damage = 0
 
                 # Check for calculated or fixed damage.
@@ -238,30 +237,29 @@ class BattleTowerPlayer(Player):
                         simulated_damage = simulated_damage + damage_calculator.calculate(active_pokemon_stats, opponent_active_pokemon_stats, move_name)
                         hit_count = hit_count + 1
 
-                print("Damage simulated was " + str(simulated_damage))
+                self.logger.debug("Damage simulated was %s", simulated_damage)
 
                 if simulated_damage >= self.guess_current_hp(battle.opponent_active_pokemon):
                     # Does this move knock out our opponent? If so, add to preferred moves.
-                    print("Potential KO; adding to top priority moves.")
+                    self.logger.info("Potential KO; adding to top priority moves.")
                     top_priority_moves.append(move)
                     continue
 
                 if self.utility_functions.move_drops_target_speed(move) and self.is_target_faster_than_user(battle.opponent_active_pokemon, battle.active_pokemon) and self.get_boost_for_stat(battle.opponent_active_pokemon.boosts, "spe") > -6:
                     if self.move_works_against_target(move, battle.active_pokemon, battle.opponent_active_pokemon):
                         # Speed control is second only to potential KOs.
-                        print("Judged target to be faster than us, and " + move.id + " seems to lower speed. Adding to high priority moves.")
+                        self.logger.debug("Judged target to be faster than us, and %s seems to lower speed. Adding to high priority moves.", move.id)
                         high_priority_moves.append(move)
                         continue
 
                 if simulated_damage > best_damage:
-                    print("Which is greater than current best, which was " + str(best_damage) + ", updating best move to " + move_name)
+                    self.logger.debug("Which is greater than current best, which was %s, updating best move to %s", best_damage, move_name)
                     best_damage = simulated_damage
                     best_move = move
 
             if len(top_priority_moves) > 0:
-                print("Selecting a potential KO move from " + str(len(top_priority_moves)) + " top priority moves:")
-                print(top_priority_moves)
-                print("Checking for moves with priority...")
+                self.logger.debug("Selecting a potential KO move from %s top priority moves: %s", len(top_priority_moves), top_priority_moves)
+                self.logger.debug("Checking for moves with priority...")
                 priority_ko_moves = []
                 
                 for ko_move in top_priority_moves:
@@ -282,29 +280,27 @@ class BattleTowerPlayer(Player):
             if best_move is not None:
                 move_options.append(best_move)
             
-            print("Normal move options at this point are ")
-            print(move_options)
+            self.logger.debug("Normal move options at this point are %s", move_options)
 
             if len(move_options) > 0:
                 best_move = random.choice(move_options)
 
             if len(high_priority_moves) > 0:
-                print("1 or more high priority moves found:")
-                print(high_priority_moves)
+                self.logger.debug("1 or more high priority moves found: %s", high_priority_moves)
                 if highest_damage_move is not None:
-                    print("Adding " + highest_damage_move.id + " to options, as it's our highest damage move.")
+                    self.logger.debug("Adding %s to options, as it's our highest damage move.", highest_damage_move.id)
                     high_priority_moves.append(highest_damage_move)
-                print("Selecting one.")
+                self.logger.debug("Selecting one.")
                 return self.create_order(random.choice(high_priority_moves))
 
             if best_move is None:
-                print("No good moves! Trying to switch...")
+                self.logger.info("No good moves! Trying to switch...")
                 if len(battle.available_switches) > 0:
                     self.active_pokemon_turn_counter = 0
                     return self.create_order(self.make_smart_switch(
                     battle.opponent_active_pokemon, battle.available_switches))
 
-                print("No switches available! Choose random move.")
+                self.logger.info("No switches available! Choose random move.")
                 return self.choose_random_move(battle)
 
             return self.create_order(best_move)
@@ -340,47 +336,44 @@ class BattleTowerPlayer(Player):
     def teampreview(self, battle):
         # Try to cache opponent's team's stats for damage calculation.
         opponent_team_path = ".\\config\\Challenger Teams"
-        print("Attempting to find opponent's team on disk...")
+        self.logger.info("Attempting to find opponent's team on disk...")
         if os.path.exists(opponent_team_path):
-            print("Team path found...")
+            self.logger.info("Team path found...")
             showdown_team_parser = ShowdownTeamParser()
-            print("Gathering file names...")
+            self.logger.debug("Gathering file names...")
             team_files = [f for f in listdir(opponent_team_path) if isfile(join(opponent_team_path, f))]
-            print(str(len(team_files)) + " found:")
-            print(team_files)
+            self.logger.debug("%s found: %s", len(team_files), team_files)
 
             for team_file in team_files:
-                print("Reading " + team_file + "...")
+                self.logger.debug("Reading %s...", team_file)
                 lines = []
                 team = ""
                 with open(opponent_team_path + "\\" + team_file) as f:
                     #lines = f.readlines()
                     team = f.read()
                 
-                print("Parsing team...")
+                self.logger.debug("Parsing team...")
                 team_dir = showdown_team_parser.parse_team(team)
                 find_count = 0
 
-                print("Iterating over opponent's team in preview...")
+                self.logger.debug("Iterating over opponent's team in preview...")
                 for opponent_pokemon in battle.opponent_team.values():
-                    print("Checking pokemon species in team dir's keys...")
-                    print("Opponent pokemon species is: " + self.pokemon_species(opponent_pokemon.species))
-                    print("Team dir's keys are:")
-                    print(team_dir.keys())
+                    self.logger.debug("Checking pokemon species in team dir's keys...")
+                    self.logger.debug("Opponent pokemon species is: %s", self.pokemon_species(opponent_pokemon.species))
+                    self.logger.debug("Team dir's keys are: %s", team_dir.keys())
                     if self.pokemon_species(opponent_pokemon.species) in team_dir.keys():
-                        print("Pokemon found! Incrementing find count to " + str(find_count))
+                        self.logger.debug("Pokemon found! Incrementing find count to %s", find_count)
                         find_count = find_count + 1
                     else:
-                        print("No match. Wrong file.")
+                        self.logger.debug("No match. Wrong file.")
                         break
 
-                print("Checking find count (it's " + str(find_count) + ")")
+                self.logger.debug("Checking find count (it's %s)", find_count)
                 if find_count == len(battle.opponent_team.values()):
-                    print("They're all here! Update opponent_team_directory.")
+                    self.logger.info("They're all here! Update opponent_team_directory.")
                     # Found the whole team in this showdown file.
                     self.opponent_team_directory = team_dir
-                    print("opponent_team_directory is:")
-                    print(self.opponent_team_directory)
+                    self.logger.debug("opponent_team_directory is: %s", self.opponent_team_directory)
                     break
 
         return "/team 123"
@@ -392,11 +385,11 @@ class BattleTowerPlayer(Player):
         return self.pokedex[species_id].get('name')
 
     def guess_current_hp(self, pokemon):
-        print("Guessing " + pokemon.species + "'s current HP.")
+        self.logger.debug("Guessing %s's current HP.", pokemon.species)
         max_hp = self.guess_max_hp(pokemon)
-        print("Max HP (guess): " + str(max_hp))
+        self.logger.debug("Max HP (guess): %s", max_hp)
         current_hp =  (pokemon.current_hp_fraction) * max_hp
-        print("Current HP (guess): " + str(current_hp))
+        self.logger.debug("Current HP (guess): %s", current_hp)
         return current_hp
 
     def guess_max_hp(self, pokemon):
@@ -448,7 +441,7 @@ class BattleTowerPlayer(Player):
             # Move doesn't work due to typing.
             return False
 
-        print("Checking abilities...")
+        self.logger.debug("Checking abilities...")
         if self.utility_functions.is_move_negated_by_ability(move,
             self.utility_functions.get_or_guess_ability(user),
             self.utility_functions.get_or_guess_ability(target)):
@@ -527,10 +520,10 @@ class BattleTowerPlayer(Player):
         user_base_speed = self.calculate_speed_stat(user, True)
 
         target_actual_speed = math.floor(target_base_speed * target_speed_factor)
-        print("Calculated target's actual speed at " + str(target_actual_speed))
+        self.logger.debug("Calculated target's actual speed at %s", target_actual_speed)
 
         user_actual_speed = math.floor(user_base_speed * user_speed_factor)
-        print("Calculated user's actual speed at " + str(user_actual_speed))
+        self.logger.debug("Calculated user's actual speed at %s", user_actual_speed)
 
         return target_actual_speed > user_actual_speed
 
@@ -554,18 +547,18 @@ class BattleTowerPlayer(Player):
         nature_mod = self.utility_functions.get_mod_for_nature(stat_block.get("nature"), "spe")
 
         result = (math.floor(0.01 * (2 * base_speed + iv + math.floor(0.25 * ev)) * pokemon.level) + 5) * nature_mod
-        print("Calculated " + pokemon_name + "'s unmodified speed at " + str(int(result)))
+        self.logger.debug("Calculated %s's unmodified speed at %s", pokemon_name, int(result))
         return result
 
     def get_boost_for_stat(self, boosts, stat):
-        print("Getting " + stat + " boost level.")
+        self.logger.debug("Getting %s boost level.", stat)
         if boosts is None:
             return 0
 
         if stat not in boosts.keys():
             return 0
 
-        print("Found boost. It's " + str(boosts[stat]))
+        self.logger.debug("Found boost. It's %s", boosts[stat])
         return boosts[stat]
 
     def is_user_able_to_survive_turn(self, active_pokemon, active_pokemon_stats, opponent_active_pokemon_stats):

@@ -2,6 +2,9 @@ import subprocess
 import json
 import os
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SimpleDamageCalculator():
     def calculate(self, attacker: dict[str, str | int], defender: dict[str, str | int], move: str):
@@ -43,18 +46,17 @@ class SimpleDamageCalculator():
             stdout, stderr = process.communicate()
 
             if stderr:
-                print("Error from bridge.js:")
-                print(stderr)
+                logger.error("Error from bridge.js: %s", stderr)
             
             if not stdout:
-                print("No output from bridge.js")
+                logger.warning("No output from bridge.js")
                 return 0
                 
             jsonResult = json.loads(stdout)
 
             if 'error' in jsonResult:
                 # Something went wrong. Print error and return 0.
-                print (jsonResult['error'])
+                logger.error(jsonResult['error'])
                 return 0
 
             if 'damage' in jsonResult:
@@ -67,7 +69,7 @@ class SimpleDamageCalculator():
             return 0
             
         except Exception as e:
-            print(f"Exception during damage calculation: {e}")
+            logger.exception("Exception during damage calculation: %s", e)
             return 0
 
     def check_for_error(self, attacker, defender, move):
